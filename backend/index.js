@@ -20,10 +20,7 @@ const uri = process.env.MONGO_URL;
 
 const app = express();
 
-app.use(cors({
-  origin:"http://localhost:3001",
-  credentials:true
-}));
+app.use(cors());
 app.use(bodyParser.json());
 
 // app.get("/addHoldings", async (req, res) => {
@@ -213,7 +210,7 @@ app.post("/newOrder", async (req, res) => {
     mode: req.body.mode,
   });
 
-  newOrder.save();
+  await newOrder.save();
 
   res.send("Order saved!");
 });
