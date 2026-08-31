@@ -44,7 +44,8 @@ function Login() {
                 alert("Login Successful");
 
                 // yaha dashboard route dalna
-                window.location.href="http://localhost:3001";
+                localStorage.setItem("user", JSON.stringify(data.user));
+                window.location.href=`http://localhost:3001?username=${encodeURIComponent(data.user.username)}&email=${encodeURIComponent(data.user.email)}`;;
             }
             else{
                 alert(data.message);

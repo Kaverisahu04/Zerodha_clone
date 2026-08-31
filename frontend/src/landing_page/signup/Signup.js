@@ -36,7 +36,6 @@ const Signup = () => {
         {
           ...inputValue,
         },
-        { withCredentials: true }
       );
       const { success, message } = data;
       if (success) {

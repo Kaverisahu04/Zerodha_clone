@@ -284,7 +284,11 @@ app.post("/login", async (req,res)=>{
 
         res.json({
             success:true,
-            message:"Login successful"
+            message:"Login successful",
+            user:{
+                email: user.email,
+                username: user.username
+            }
         });
 
     }catch(error){

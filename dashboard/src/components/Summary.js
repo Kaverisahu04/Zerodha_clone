@@ -1,10 +1,12 @@
 import React from "react";
 
 const Summary = () => {
+  const params = new URLSearchParams(window.location.search);
+  const username = params.get("username");
   return (
     <>
       <div className="username">
-        <h6>Hi, User!</h6>
+        <h6>Hi, {username}!</h6>
         <hr className="divider" />
       </div>
 

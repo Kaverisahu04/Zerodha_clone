@@ -3,6 +3,9 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 const Menu = () => {
+  const params = new URLSearchParams(window.location.search);
+  const username = params.get("username");
+  const email = params.get("email");
   const [selectedMenu, setSelectedMenu] = useState(0);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
@@ -90,10 +93,20 @@ const Menu = () => {
           </li>
         </ul>
         <hr />
-        <div className="profile" onClick={handleProfileClick}>
-          <div className="avatar">ZU</div>
-          <p className="username">USERID</p>
-        </div>
+        {isProfileDropdownOpen && (
+          <div className="profile-dropdown">
+            <p><strong>{username}</strong></p>
+            <p>{email}</p>
+
+            <button
+              onClick={() => {
+                window.location.href = "http://localhost:3000/login";
+              }}
+            >
+              Logout
+            </button>
+          </div>
+        )}
         {/* {isProfileDropdownOpen } */}
       </div>
     </div>
