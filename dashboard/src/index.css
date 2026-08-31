@@ -319,6 +319,23 @@ hr {
   margin-right: 8px;
 }
 
+.profile-dropdown {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  background: white;
+  padding: 15px;
+  width: 200px;
+  border: 1px solid #ddd;
+  z-index: 1000;
+}
+
+.profile-dropdown button {
+  cursor: pointer;
+  padding: 8px 15px;
+  margin-top: 10px;
+}
+
 .profile .username {
   font-size: 0.8rem;
   font-weight: 300;

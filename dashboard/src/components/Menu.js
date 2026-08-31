@@ -13,7 +13,7 @@ const Menu = () => {
     setSelectedMenu(index);
   };
 
-  const handleProfileClick = (index) => {
+  const handleProfileClick = () => {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
   };
 
@@ -93,6 +93,15 @@ const Menu = () => {
           </li>
         </ul>
         <hr />
+        <div className="profile" onClick={handleProfileClick}>
+          <div className="avatar">
+            {username ? username.charAt(0).toUpperCase() : "U"}
+          </div>
+
+          <p className="username">
+            {username || "USERID"}
+          </p>
+        </div>
         {isProfileDropdownOpen && (
           <div className="profile-dropdown">
             <p><strong>{username}</strong></p>
@@ -100,6 +109,7 @@ const Menu = () => {
 
             <button
               onClick={() => {
+                // alert("Logout button  clicked")
                 window.location.href = "http://localhost:3000/login";
               }}
             >
