@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 const Menu = () => {
   const params = new URLSearchParams(window.location.search);
+
   const username = params.get("username");
   const email = params.get("email");
   const [selectedMenu, setSelectedMenu] = useState(0);
@@ -104,12 +105,18 @@ const Menu = () => {
         </div>
         {isProfileDropdownOpen && (
           <div className="profile-dropdown">
-            <p><strong>{username}</strong></p>
-            <p>{email}</p>
+            <p style={{ color: "black", fontSize: "16px" }}>
+              USERNAME: {username}
+            </p>
+
+            <p style={{ color: "black", fontSize: "16px" }}>
+              EMAIL: {email}
+            </p>
 
             <button
               onClick={() => {
                 // alert("Logout button  clicked")
+                localStorage.removeItem("user");
                 window.location.href = "http://localhost:3000/login";
               }}
             >

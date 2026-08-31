@@ -37,15 +37,16 @@ function Login() {
 
             const data = await response.json();
 
-            console.log(data);
+            console.log(data.user);
 
 
             if(data.success){
                 alert("Login Successful");
 
                 // yaha dashboard route dalna
-                localStorage.setItem("user", JSON.stringify(data.user));
+                // localStorage.setItem("user", JSON.stringify(data.user));
                 window.location.href=`http://localhost:3001?username=${encodeURIComponent(data.user.username)}&email=${encodeURIComponent(data.user.email)}`;;
+                // window.location.href = "http://localhost:3001";
             }
             else{
                 alert(data.message);

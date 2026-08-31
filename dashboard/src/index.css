@@ -319,15 +319,30 @@ hr {
   margin-right: 8px;
 }
 
+.menus {
+  position: relative;
+}
+
 .profile-dropdown {
   position: absolute;
-  top: 60px;
-  right: 20px;
+  top: 45px;
+  right: 0;
   background: white;
   padding: 15px;
   width: 200px;
   border: 1px solid #ddd;
   z-index: 1000;
+}
+
+.profile-dropdown p {
+  margin: 5px 0;
+  color: #333;
+}
+
+.profile-dropdown button {
+  cursor: pointer;
+  padding: 8px 15px;
+  margin-top: 10px;
 }
 
 .profile-dropdown button {
