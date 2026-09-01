@@ -11,10 +11,11 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 
 const { HoldingsModel } = require("./model/HoldingsModel");
-
+const { FundsModel } = require("./models/FundsModel");
 const { PositionsModel } = require("./model/PositionsModel");
 const { OrdersModel } = require("./model/OrdersModel");
 const { UserModel } = require("./model/UserModel");
+
 
 const PORT = process.env.PORT || 3002;
 const uri = process.env.MONGO_URL;
@@ -383,6 +384,23 @@ app.post("/newOrder", async (req, res) => {
 app.get("/allOrders", async (req, res) => {
   let allOrders = await OrdersModel.find({});
   res.json(allOrders);
+});
+
+app.get("/allFunds", async (req, res) => {
+  try {
+    let funds = await FundsModel.findOne({});
+
+    // Agar funds ka record nahi hai to pehli baar create hoga
+    if (!funds) {
+      funds = new FundsModel({});
+      await funds.save();
+    }
+
+    res.json(funds);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Something went wrong");
+  }
 });
 
 app.post("/signup", async (req, res) => {
