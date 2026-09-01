@@ -205,50 +205,52 @@ app.get("/allPositions", async (req, res) => {
 
 app.post("/newOrder", async (req, res) => {
   try {
-    // 1. Save order
-    let newOrder = new OrdersModel({
-      name: req.body.name,
-      qty: req.body.qty,
-      price: req.body.price,
-      mode: req.body.mode,
-    });
+    const { name, qty, price, mode } = req.body;
 
-    await newOrder.save();
+    const orderQty = Number(qty);
+    const orderPrice = Number(price);
 
-    // 2. If BUY, create/update position
-    if (req.body.mode === "BUY") {
-      let existingPosition = await PositionsModel.findOne({
-        name: req.body.name,
+    // ================= BUY =================
+
+    if (mode === "BUY") {
+
+      // 1. Save Order
+      const newOrder = new OrdersModel({
+        name,
+        qty: orderQty,
+        price: orderPrice,
+        mode,
       });
 
+      await newOrder.save();
+
+      // 2. Update Position
+      const existingPosition = await PositionsModel.findOne({ name });
+
       if (existingPosition) {
-        // Existing position update
 
-        let oldQty = existingPosition.qty;
-        let oldAvg = existingPosition.avg;
+        const oldQty = existingPosition.qty;
+        const oldAvg = existingPosition.avg;
 
-        let newQty = Number(req.body.qty);
-        let newPrice = Number(req.body.price);
+        const totalQty = oldQty + orderQty;
 
-        let totalQty = oldQty + newQty;
-
-        let newAvg =
-          (oldQty * oldAvg + newQty * newPrice) / totalQty;
+        const newAvg =
+          (oldQty * oldAvg + orderQty * orderPrice) / totalQty;
 
         existingPosition.qty = totalQty;
         existingPosition.avg = newAvg;
-        existingPosition.price = newPrice;
+        existingPosition.price = orderPrice;
 
         await existingPosition.save();
-      } else {
-        // New position
 
-        let newPosition = new PositionsModel({
+      } else {
+
+        const newPosition = new PositionsModel({
           product: "CNC",
-          name: req.body.name,
-          qty: Number(req.body.qty),
-          avg: Number(req.body.price),
-          price: Number(req.body.price),
+          name,
+          qty: orderQty,
+          avg: orderPrice,
+          price: orderPrice,
           net: "0.00",
           day: "0.00%",
           isLoss: false,
@@ -256,11 +258,124 @@ app.post("/newOrder", async (req, res) => {
 
         await newPosition.save();
       }
+
+      // 3. Update Holdings
+      const existingHolding = await HoldingsModel.findOne({ name });
+
+      if (existingHolding) {
+
+        const oldQty = existingHolding.qty;
+        const oldAvg = existingHolding.avg;
+
+        const totalQty = oldQty + orderQty;
+
+        const newAvg =
+          (oldQty * oldAvg + orderQty * orderPrice) / totalQty;
+
+        existingHolding.qty = totalQty;
+        existingHolding.avg = newAvg;
+        existingHolding.price = orderPrice;
+
+        await existingHolding.save();
+
+      } else {
+
+        const newHolding = new HoldingsModel({
+          name,
+          qty: orderQty,
+          avg: orderPrice,
+          price: orderPrice,
+          net: "0.00%",
+          day: "0.00%",
+        });
+
+        await newHolding.save();
+      }
+
+      return res.send("Buy order saved!");
     }
 
-    res.send("Order saved!");
+
+    // ================= SELL =================
+
+    if (mode === "SELL") {
+
+      // 1. Check Position
+      const existingPosition = await PositionsModel.findOne({ name });
+
+      if (!existingPosition) {
+        return res.status(400).send("You don't have this stock");
+      }
+
+      // 2. Check Quantity
+      if (orderQty > existingPosition.qty) {
+        return res.status(400).send("Not enough quantity");
+      }
+
+      // 3. Check Holding
+      const existingHolding = await HoldingsModel.findOne({ name });
+
+      if (!existingHolding) {
+        return res.status(400).send("Holding not found");
+      }
+
+      if (orderQty > existingHolding.qty) {
+        return res.status(400).send("Not enough holding quantity");
+      }
+
+      // 4. Save SELL Order
+      const newOrder = new OrdersModel({
+        name,
+        qty: orderQty,
+        price: orderPrice,
+        mode,
+      });
+
+      await newOrder.save();
+
+      // 5. Reduce Position
+      existingPosition.qty =
+        existingPosition.qty - orderQty;
+
+      if (existingPosition.qty === 0) {
+
+        await PositionsModel.deleteOne({
+          _id: existingPosition._id,
+        });
+
+      } else {
+
+        await existingPosition.save();
+      }
+
+
+      // 6. Reduce Holding
+      existingHolding.qty =
+        existingHolding.qty - orderQty;
+
+      if (existingHolding.qty === 0) {
+
+        await HoldingsModel.deleteOne({
+          _id: existingHolding._id,
+        });
+
+      } else {
+
+        await existingHolding.save();
+      }
+
+      return res.send("Sell order saved!");
+    }
+
+
+    // ================= INVALID MODE =================
+
+    return res.status(400).send("Invalid order mode");
+
   } catch (error) {
+
     console.log(error);
+
     res.status(500).send("Something went wrong");
   }
 });
