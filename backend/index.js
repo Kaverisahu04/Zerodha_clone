@@ -204,16 +204,70 @@ app.get("/allPositions", async (req, res) => {
 });
 
 app.post("/newOrder", async (req, res) => {
-  let newOrder = new OrdersModel({
-    name: req.body.name,
-    qty: req.body.qty,
-    price: req.body.price,
-    mode: req.body.mode,
-  });
+  try {
+    // 1. Save order
+    let newOrder = new OrdersModel({
+      name: req.body.name,
+      qty: req.body.qty,
+      price: req.body.price,
+      mode: req.body.mode,
+    });
 
-  await newOrder.save();
+    await newOrder.save();
 
-  res.send("Order saved!");
+    // 2. If BUY, create/update position
+    if (req.body.mode === "BUY") {
+      let existingPosition = await PositionsModel.findOne({
+        name: req.body.name,
+      });
+
+      if (existingPosition) {
+        // Existing position update
+
+        let oldQty = existingPosition.qty;
+        let oldAvg = existingPosition.avg;
+
+        let newQty = Number(req.body.qty);
+        let newPrice = Number(req.body.price);
+
+        let totalQty = oldQty + newQty;
+
+        let newAvg =
+          (oldQty * oldAvg + newQty * newPrice) / totalQty;
+
+        existingPosition.qty = totalQty;
+        existingPosition.avg = newAvg;
+        existingPosition.price = newPrice;
+
+        await existingPosition.save();
+      } else {
+        // New position
+
+        let newPosition = new PositionsModel({
+          product: "CNC",
+          name: req.body.name,
+          qty: Number(req.body.qty),
+          avg: Number(req.body.price),
+          price: Number(req.body.price),
+          net: "0.00",
+          day: "0.00%",
+          isLoss: false,
+        });
+
+        await newPosition.save();
+      }
+    }
+
+    res.send("Order saved!");
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Something went wrong");
+  }
+});
+
+app.get("/allOrders", async (req, res) => {
+  let allOrders = await OrdersModel.find({});
+  res.json(allOrders);
 });
 
 app.post("/signup", async (req, res) => {

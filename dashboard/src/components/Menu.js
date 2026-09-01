@@ -127,35 +127,45 @@ const email = user?.email;
         </ul>
         <hr />
         <div className="profile" onClick={handleProfileClick}>
-          <div className="avatar">
-            {username ? username.charAt(0).toUpperCase() : "U"}
-          </div>
+  <div className="avatar">
+    {username ? username.charAt(0).toUpperCase() : "U"}
+  </div>
 
-          <p className="username">
-            {username || "USERID"}
-          </p>
-        </div>
-        {isProfileDropdownOpen && (
-          <div className="profile-dropdown">
-            <p style={{ color: "black", fontSize: "16px" }}>
-              USERNAME: {username}
-            </p>
+  <p className="username">
+    {username || "USERID"}
+  </p>
 
-            <p style={{ color: "black", fontSize: "16px" }}>
-              EMAIL: {email}
-            </p>
+  <span className="profile-arrow">
+    {isProfileDropdownOpen ? "▲" : "▼"}
+  </span>
+</div>
 
-            <button
-              onClick={() => {
-                // alert("Logout button  clicked")
-                localStorage.removeItem("user");
-                window.location.href = "http://localhost:3000/login";
-              }}
-            >
-              Logout
-            </button>
-          </div>
-        )}
+{isProfileDropdownOpen && (
+  <div className="profile-dropdown">
+    <div className="profile-header">
+      <div className="big-avatar">
+        {username ? username.charAt(0).toUpperCase() : "U"}
+      </div>
+
+      <div>
+        <h4>{username || "User"}</h4>
+        <p>{email || "No email"}</p>
+      </div>
+    </div>
+
+    <hr />
+
+    <button
+      onClick={() => {
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        window.location.href = "http://localhost:3000/login";
+      }}
+    >
+      Logout
+    </button>
+  </div>
+)}
         {/* {isProfileDropdownOpen } */}
       </div>
     </div>
