@@ -44,8 +44,10 @@ function Login() {
                 alert("Login Successful");
 
                 // yaha dashboard route dalna
-                // localStorage.setItem("user", JSON.stringify(data.user));
-                window.location.href=`http://localhost:3001?username=${encodeURIComponent(data.user.username)}&email=${encodeURIComponent(data.user.email)}`;;
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.user));
+                window.location.href = `http://localhost:3001/?token=${data.token}`;
+                // window.location.href=`http://localhost:3001?username=${encodeURIComponent(data.user.username)}&email=${encodeURIComponent(data.user.email)}`;;
                 // window.location.href = "http://localhost:3001";
             }
             else{

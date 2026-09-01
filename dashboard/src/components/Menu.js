@@ -1,12 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { Link } from "react-router-dom";
 
 const Menu = () => {
-  const params = new URLSearchParams(window.location.search);
+  const [user, setUser] = useState(null);
 
-  const username = params.get("username");
-  const email = params.get("email");
+useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+
+    if (token) {
+        fetch("http://localhost:3002/user", {
+            headers: {
+                Authorization: token,
+            },
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("USER DATA:", data);
+
+            if (data.success) {
+                setUser(data.user);
+
+                // Dashboard ke localhost:3001 me user save
+                localStorage.setItem("user", JSON.stringify(data.user));
+                window.dispatchEvent(new Event("userUpdated"));
+                window.history.replaceState({}, "", "/"); // Remove token from URL
+            }
+        })
+        .catch((error) => {
+            console.log("USER ERROR:", error);
+        });
+    } else {
+        const savedUser = JSON.parse(localStorage.getItem("user"));
+        setUser(savedUser);
+    }
+}, []);
+
+const username = user?.username;
+const email = user?.email;
   const [selectedMenu, setSelectedMenu] = useState(0);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 

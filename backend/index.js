@@ -5,7 +5,8 @@ require("dotenv").config();
 const bcrypt = require("bcrypt");
 
 const express = require("express");
-const mongoose = require("mongoose");  
+const mongoose = require("mongoose"); 
+const jwt = require("jsonwebtoken"); 
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
@@ -282,19 +283,58 @@ app.post("/login", async (req,res)=>{
             });
         }
 
+        const token = jwt.sign(
+            {
+                userId: user._id,
+                username: user.username,
+                email: user.email
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "1d" }
+        );
+
         res.json({
-            success:true,
-            message:"Login successful",
-            user:{
-                email: user.email,
-                username: user.username
+            success: true,
+            message: "Login successful",
+            token: token,
+            user: {
+                username: user.username,
+                email: user.email
             }
         });
-
     }catch(error){
         res.json({
             success:false,
             message:error.message
+        });
+    }
+});
+
+app.get("/user", (req, res) => {
+    try {
+        const token = req.headers.authorization;
+
+        if (!token) {
+            return res.json({
+                success: false,
+                message: "No token provided"
+            });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        res.json({
+            success: true,
+            user: {
+                username: decoded.username,
+                email: decoded.email
+            }
+        });
+
+    } catch (error) {
+        res.json({
+            success: false,
+            message: "Invalid token"
         });
     }
 });

@@ -1,8 +1,22 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const Summary = () => {
-  const params = new URLSearchParams(window.location.search);
-  const username = params.get("username");
+  const [username, setUsername] = useState("");
+
+    useEffect(() => {
+    const getUser = () => {
+      const user = JSON.parse(localStorage.getItem("user"));
+      setUsername(user?.username || "");
+    };
+
+    getUser();
+
+    window.addEventListener("userUpdated", getUser);
+
+    return () => {
+      window.removeEventListener("userUpdated", getUser);
+    };
+  }, []);
   return (
     <>
       <div className="username">
