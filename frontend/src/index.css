@@ -5,7 +5,6 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  
 }
 
 code {
@@ -47,17 +46,17 @@ label {
 
 .form_container {
   background-color: #fff;
-  padding: 2rem 3rem;
+  padding: 30px;
   border-radius: 0.5rem;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 8px 8px 24px 0px rgba(66, 68, 90, 1);
+  width: 400px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  margin:80px auto;
 }
 
 .form_container > h2 {
   margin-block: 1rem;
   padding-block: 0.6rem;
-  color: rgba(0, 212, 255, 1);
+  color: #387ed1;
 }
 
 .form_container > form {
@@ -86,7 +85,7 @@ label {
 }
 
 .form_container button {
-  background-color: rgba(0, 212, 255, 1);
+  background-color: #387ed1;
   color: #fff;
   border: none;
   padding: 0.6rem;
@@ -180,7 +179,7 @@ label {
 }
 
 .login-box button:hover {
-    background-color: #245b9c;
+    background-color: #387ed1;
 }
 
 .login-signup {

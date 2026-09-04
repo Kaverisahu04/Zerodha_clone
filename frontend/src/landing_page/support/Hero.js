@@ -5,7 +5,7 @@ function Hero() {
     <section className="container-fluid" id="supportHero">
       <div className="p-5 " id="supportWrapper">
         <h4>Support Portal</h4>
-        <a href="">
+        <a href="" style={{color: "white", marginRight: "20px" }}>
           Track Tickets
         </a>
       </div>
