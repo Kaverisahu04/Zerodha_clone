@@ -211,11 +211,28 @@ app.post("/newOrder", async (req, res) => {
     const orderQty = Number(qty);
     const orderPrice = Number(price);
 
+    // Total amount of this order
+    const totalAmount = orderQty * orderPrice;
+
+
     // ================= BUY =================
 
     if (mode === "BUY") {
 
-      // 1. Save Order
+      // 1. Check Funds
+      const funds = await FundsModel.findOne({});
+
+      if (!funds) {
+        return res.status(400).send("Funds account not found");
+      }
+
+      // 2. Check Available Cash
+      if (totalAmount > funds.availableCash) {
+        return res.status(400).send("Insufficient funds");
+      }
+
+
+      // 3. Save Order
       const newOrder = new OrdersModel({
         name,
         qty: orderQty,
@@ -225,7 +242,8 @@ app.post("/newOrder", async (req, res) => {
 
       await newOrder.save();
 
-      // 2. Update Position
+
+      // 4. Update Position
       const existingPosition = await PositionsModel.findOne({ name });
 
       if (existingPosition) {
@@ -260,7 +278,8 @@ app.post("/newOrder", async (req, res) => {
         await newPosition.save();
       }
 
-      // 3. Update Holdings
+
+      // 5. Update Holdings
       const existingHolding = await HoldingsModel.findOne({ name });
 
       if (existingHolding) {
@@ -293,8 +312,18 @@ app.post("/newOrder", async (req, res) => {
         await newHolding.save();
       }
 
+
+      // 6. Deduct Money from Funds
+      funds.availableCash = funds.availableCash - totalAmount;
+
+      funds.usedMargin = funds.usedMargin + totalAmount;
+
+      await funds.save();
+
+
       return res.send("Buy order saved!");
     }
+
 
 
     // ================= SELL =================
@@ -308,10 +337,12 @@ app.post("/newOrder", async (req, res) => {
         return res.status(400).send("You don't have this stock");
       }
 
-      // 2. Check Quantity
+
+      // 2. Check Position Quantity
       if (orderQty > existingPosition.qty) {
         return res.status(400).send("Not enough quantity");
       }
+
 
       // 3. Check Holding
       const existingHolding = await HoldingsModel.findOne({ name });
@@ -320,11 +351,14 @@ app.post("/newOrder", async (req, res) => {
         return res.status(400).send("Holding not found");
       }
 
+
+      // 4. Check Holding Quantity
       if (orderQty > existingHolding.qty) {
         return res.status(400).send("Not enough holding quantity");
       }
 
-      // 4. Save SELL Order
+
+      // 5. Save SELL Order
       const newOrder = new OrdersModel({
         name,
         qty: orderQty,
@@ -334,7 +368,8 @@ app.post("/newOrder", async (req, res) => {
 
       await newOrder.save();
 
-      // 5. Reduce Position
+
+      // 6. Reduce Position Quantity
       existingPosition.qty =
         existingPosition.qty - orderQty;
 
@@ -350,7 +385,10 @@ app.post("/newOrder", async (req, res) => {
       }
 
 
-      // 6. Reduce Holding
+      // 7. Reduce Holding Quantity
+      const holdingCost =
+        existingHolding.avg * orderQty;
+
       existingHolding.qty =
         existingHolding.qty - orderQty;
 
@@ -365,8 +403,28 @@ app.post("/newOrder", async (req, res) => {
         await existingHolding.save();
       }
 
+
+      // 8. Add SELL Money to Funds
+      const funds = await FundsModel.findOne({});
+
+      if (!funds) {
+        return res.status(400).send("Funds account not found");
+      }
+
+      // Money received from selling stock
+      funds.availableCash =
+        funds.availableCash + totalAmount;
+
+      // Reduce used margin according to original holding cost
+      funds.usedMargin =
+        Math.max(0, funds.usedMargin - holdingCost);
+
+      await funds.save();
+
+
       return res.send("Sell order saved!");
     }
+
 
 
     // ================= INVALID MODE =================
