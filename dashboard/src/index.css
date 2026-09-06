@@ -977,5 +977,33 @@ hr {
 /* Apps */
 
 
+/* funds */
+
+.fund-action {
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.fund-action h4 {
+  margin-bottom: 15px;
+}
+
+.fund-action input {
+  padding: 10px;
+  width: 220px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+}
+
+.fund-action button {
+  margin-right: 10px;
+}
+
+
 
 

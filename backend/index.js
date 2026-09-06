@@ -461,6 +461,67 @@ app.get("/allFunds", async (req, res) => {
   }
 });
 
+// ================= ADD FUNDS =================
+
+app.post("/addFunds", async (req, res) => {
+  try {
+    const amount = Number(req.body.amount);
+
+    if (!amount || amount <= 0) {
+      return res.status(400).send("Invalid amount");
+    }
+
+    let funds = await FundsModel.findOne({});
+
+    if (!funds) {
+      funds = new FundsModel({});
+    }
+
+    funds.availableCash += amount;
+    funds.openingBalance += amount;
+
+    await funds.save();
+
+    res.send("Funds added successfully");
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Something went wrong");
+  }
+});
+
+
+// ================= WITHDRAW FUNDS =================
+
+app.post("/withdrawFunds", async (req, res) => {
+  try {
+    const amount = Number(req.body.amount);
+
+    if (!amount || amount <= 0) {
+      return res.status(400).send("Invalid amount");
+    }
+
+    const funds = await FundsModel.findOne({});
+
+    if (!funds) {
+      return res.status(400).send("Funds account not found");
+    }
+
+    if (amount > funds.availableCash) {
+      return res.status(400).send("Insufficient funds");
+    }
+
+    funds.availableCash -= amount;
+    funds.openingBalance -= amount;
+
+    await funds.save();
+
+    res.send("Funds withdrawn successfully");
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Something went wrong");
+  }
+});
+
 app.post("/signup", async (req, res) => {
     try {
       console.log("SIGNUP REQUEST:", req.body);
