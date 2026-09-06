@@ -2,6 +2,12 @@ const dns = require("dns").promises;
 dns.setServers(["1.1.1.1", ])
 
 require("dotenv").config();
+
+console.log(
+  "Finnhub API Key:",
+  process.env.FINNHUB_API_KEY ? "Loaded" : "Not Loaded"
+);
+
 const bcrypt = require("bcrypt");
 
 const express = require("express");
@@ -643,6 +649,96 @@ app.get("/user", (req, res) => {
             message: "Invalid token"
         });
     }
+});
+
+// ================= FINNHUB TEST =================
+
+app.get("/testFinnhub", async (req, res) => {
+  try {
+    const response = await fetch(
+      `https://finnhub.io/api/v1/quote?symbol=AAPL&token=${process.env.FINNHUB_API_KEY}`
+    );
+
+    const data = await response.json();
+
+    console.log("Finnhub AAPL Data:", data);
+
+    res.json(data);
+  } catch (error) {
+    console.log("Finnhub Error:", error);
+    res.status(500).send("Finnhub API error");
+  }
+});
+
+app.get("/testYahoo", async (req, res) => {
+  try {
+    const response = await fetch(
+      "https://query1.finance.yahoo.com/v8/finance/chart/TCS.NS"
+    );
+
+    const data = await response.json();
+
+    const result = data.chart.result[0];
+    const meta = result.meta;
+
+    const ltp = meta.regularMarketPrice;
+    const previousClose = meta.previousClose;
+
+    const change = ltp - previousClose;
+    const changePercent = (change / previousClose) * 100;
+
+    res.json({
+      symbol: "TCS",
+      ltp: ltp,
+      change: change,
+      changePercent: changePercent,
+    });
+  } catch (error) {
+    console.log("Yahoo Error:", error);
+    res.status(500).send("Yahoo Finance API error");
+  }
+});
+
+app.get("/marketQuotes", async (req, res) => {
+  try {
+    const symbols = [
+      "TCS.NS",
+      "INFY.NS",
+      "RELIANCE.NS",
+      "HDFCBANK.NS",
+      "WIPRO.NS",
+    ];
+
+    const quotes = await Promise.all(
+      symbols.map(async (symbol) => {
+        const response = await fetch(
+          `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`
+        );
+
+        const data = await response.json();
+
+        const meta = data.chart.result[0].meta;
+
+        const ltp = meta.regularMarketPrice;
+        const previousClose = meta.previousClose;
+
+        const change = ltp - previousClose;
+        const changePercent = (change / previousClose) * 100;
+
+        return {
+          symbol: symbol.replace(".NS", ""),
+          ltp: ltp,
+          change: change,
+          changePercent: changePercent,
+        };
+      })
+    );
+
+    res.json(quotes);
+  } catch (error) {
+    console.log("Market Quotes Error:", error);
+    res.status(500).send("Market data error");
+  }
 });
 
 app.listen(PORT, () => {
