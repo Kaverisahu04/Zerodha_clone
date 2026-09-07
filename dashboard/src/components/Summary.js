@@ -3,12 +3,11 @@ import axios from "axios";
 
 const Summary = () => {
   const [username, setUsername] = useState("");
-
   const [funds, setFunds] = useState(null);
   const [holdings, setHoldings] = useState([]);
+  const [quotes, setQuotes] = useState([]);
 
   // ================= USER =================
-
   useEffect(() => {
     const getUser = () => {
       const user = JSON.parse(localStorage.getItem("user"));
@@ -25,35 +24,81 @@ const Summary = () => {
   }, []);
 
   // ================= FUNDS =================
+  const fetchFunds = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:3002/allFunds"
+      );
+
+      console.log("Funds:", res.data);
+      setFunds(res.data);
+    } catch (error) {
+      console.log("Funds Error:", error);
+    }
+  };
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3002/allFunds")
-      .then((res) => {
-        console.log("Funds:", res.data);
-        setFunds(res.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    fetchFunds();
   }, []);
 
   // ================= HOLDINGS =================
+  const fetchHoldings = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:3002/allHoldings"
+      );
+
+      console.log("Holdings:", res.data);
+      setHoldings(res.data);
+    } catch (error) {
+      console.log("Holdings Error:", error);
+    }
+  };
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3002/allHoldings")
-      .then((res) => {
-        console.log("Holdings:", res.data);
-        setHoldings(res.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    fetchHoldings();
   }, []);
 
-  // ================= LOADING =================
+  // ================= LIVE MARKET QUOTES =================
+  const fetchQuotes = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:3002/marketQuotes"
+      );
 
+      console.log("Live Quotes:", res.data);
+      setQuotes(res.data);
+    } catch (error) {
+      console.log("Quotes Error:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuotes();
+
+    // Every 30 seconds live price update
+    const interval = setInterval(() => {
+      fetchQuotes();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // ================= COMBINE HOLDINGS + LIVE PRICE =================
+  const updatedHoldings = holdings.map((stock) => {
+    const liveStock = quotes.find(
+      (quote) => quote.symbol === stock.name
+    );
+
+    return {
+      ...stock,
+      livePrice: liveStock
+        ? liveStock.ltp
+        : stock.price,
+    };
+  });
+
+  // ================= LOADING =================
   if (!funds) {
     return <h3>Loading...</h3>;
   }
@@ -63,22 +108,29 @@ const Summary = () => {
   let totalInvestment = 0;
   let currentValue = 0;
 
-  holdings.forEach((stock) => {
+  updatedHoldings.forEach((stock) => {
     totalInvestment += stock.avg * stock.qty;
-    currentValue += stock.price * stock.qty;
+
+    currentValue +=
+      stock.livePrice * stock.qty;
   });
 
-  // Total P&L
-  const totalProfitLoss = currentValue - totalInvestment;
+  // ================= TOTAL P&L =================
 
-  // P&L percentage
+  const totalProfitLoss =
+    currentValue - totalInvestment;
+
+  // ================= P&L PERCENTAGE =================
+
   const profitLossPercentage =
     totalInvestment > 0
       ? (totalProfitLoss / totalInvestment) * 100
       : 0;
 
   const profitClass =
-    totalProfitLoss >= 0 ? "profit" : "loss";
+    totalProfitLoss >= 0
+      ? "profit"
+      : "loss";
 
   // ================= UI =================
 
@@ -88,9 +140,9 @@ const Summary = () => {
 
       <div className="username">
         <h6>Hi, {username}!</h6>
+
         <hr className="divider" />
       </div>
-
 
       {/* ================= EQUITY ================= */}
 
@@ -118,6 +170,7 @@ const Summary = () => {
 
             <p>
               Margins used{" "}
+
               <span>
                 ₹{funds.usedMargin.toFixed(2)}
               </span>
@@ -125,6 +178,7 @@ const Summary = () => {
 
             <p>
               Opening balance{" "}
+
               <span>
                 ₹{funds.openingBalance.toFixed(2)}
               </span>
@@ -138,14 +192,13 @@ const Summary = () => {
 
       </div>
 
-
       {/* ================= HOLDINGS ================= */}
 
       <div className="section">
 
         <span>
           <p>
-            Holdings ({holdings.length})
+            Holdings ({updatedHoldings.length})
           </p>
         </span>
 
@@ -159,8 +212,13 @@ const Summary = () => {
 
               <small>
                 {" "}
-                {totalProfitLoss >= 0 ? "+" : ""}
+
+                {totalProfitLoss >= 0
+                  ? "+"
+                  : ""}
+
                 {profitLossPercentage.toFixed(2)}%
+
               </small>
 
             </h3>
@@ -175,6 +233,7 @@ const Summary = () => {
 
             <p>
               Current Value{" "}
+
               <span>
                 ₹{currentValue.toFixed(2)}
               </span>
@@ -182,6 +241,7 @@ const Summary = () => {
 
             <p>
               Investment{" "}
+
               <span>
                 ₹{totalInvestment.toFixed(2)}
               </span>
@@ -194,7 +254,6 @@ const Summary = () => {
         <hr className="divider" />
 
       </div>
-
     </>
   );
 };
