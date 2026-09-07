@@ -702,39 +702,60 @@ app.get("/testYahoo", async (req, res) => {
 app.get("/marketQuotes", async (req, res) => {
   try {
     const symbols = [
-      "TCS.NS",
       "INFY.NS",
-      "RELIANCE.NS",
-      "HDFCBANK.NS",
+      "ONGC.NS",
+      "TCS.NS",
+      "KPITTECH.NS",
+      "QUICKHEAL.NS",
       "WIPRO.NS",
+      "M&M.NS",
+      "RELIANCE.NS",
+      "HINDUNILVR.NS",
     ];
 
     const quotes = await Promise.all(
       symbols.map(async (symbol) => {
-        const response = await fetch(
-          `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`
-        );
+        try {
+          const response = await fetch(
+            `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}`
+          );
 
-        const data = await response.json();
+          const data = await response.json();
 
-        const meta = data.chart.result[0].meta;
+          if (
+            !data.chart ||
+            !data.chart.result ||
+            !data.chart.result[0]
+          ) {
+            return null;
+          }
 
-        const ltp = meta.regularMarketPrice;
-        const previousClose = meta.previousClose;
+          const meta = data.chart.result[0].meta;
 
-        const change = ltp - previousClose;
-        const changePercent = (change / previousClose) * 100;
+          const ltp = meta.regularMarketPrice;
+          const previousClose = meta.previousClose;
 
-        return {
-          symbol: symbol.replace(".NS", ""),
-          ltp: ltp,
-          change: change,
-          changePercent: changePercent,
-        };
+          const change = ltp - previousClose;
+
+          const changePercent =
+            (change / previousClose) * 100;
+
+          return {
+            symbol: symbol === "HINDUNILVR.NS"
+              ? "HUL"
+              : symbol.replace(".NS", ""),
+            ltp: ltp,
+            change: change,
+            changePercent: changePercent,
+          };
+        } catch (error) {
+          console.log(`Error fetching ${symbol}:`, error);
+          return null;
+        }
       })
     );
 
-    res.json(quotes);
+    res.json(quotes.filter((quote) => quote !== null));
   } catch (error) {
     console.log("Market Quotes Error:", error);
     res.status(500).send("Market data error");
