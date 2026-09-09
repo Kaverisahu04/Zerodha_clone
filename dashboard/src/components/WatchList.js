@@ -1,5 +1,4 @@
 import React, { useState, useContext, useEffect } from "react";
-
 import axios from "axios";
 
 import GeneralContext from "./GeneralContext";
@@ -18,48 +17,62 @@ import { DoughnutChart } from "./DoughnoutChart";
 
 const WatchList = () => {
   const [quotes, setQuotes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Get live market data from backend
+  // ================= LIVE MARKET DATA =================
+
+  const fetchQuotes = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:3002/marketQuotes"
+      );
+
+      console.log("Live Market Quotes:", res.data);
+
+      setQuotes(res.data);
+      setLoading(false);
+    } catch (error) {
+      console.log("Market Quotes Error:", error);
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchQuotes = async () => {
-      try {
-        const res = await axios.get("http://localhost:3002/marketQuotes");
-
-        console.log("Live Market Quotes:", res.data);
-
-        setQuotes(res.data);
-      } catch (error) {
-        console.log("Market Quotes Error:", error);
-      }
-    };
-
     fetchQuotes();
 
-    // Refresh price every 30 seconds
+    // Refresh every 30 seconds
     const interval = setInterval(fetchQuotes, 30000);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Combine static watchlist with live prices
+  // ================= COMBINE WATCHLIST + LIVE DATA =================
+
   const updatedWatchlist = watchlist.map((stock) => {
     const liveStock = quotes.find(
       (quote) => quote.symbol === stock.name
     );
 
-    if (liveStock) {
-      return {
-        ...stock,
-        price: liveStock.ltp,
-        percent: `${liveStock.changePercent >= 0 ? "+" : ""}${liveStock.changePercent.toFixed(2)}%`,
-        isDown: liveStock.change < 0,
-      };
-    }
+    return {
+      ...stock,
 
-    return stock;
+      price: liveStock ? liveStock.ltp : null,
+
+      percent: liveStock
+        ? `${liveStock.changePercent >= 0 ? "+" : ""}${liveStock.changePercent.toFixed(2)}%`
+        : "--",
+
+      isDown: liveStock
+        ? liveStock.change < 0
+        : false,
+    };
   });
 
-  const labels = updatedWatchlist.map((stock) => stock.name);
+  // ================= CHART DATA =================
+
+  const labels = updatedWatchlist.map(
+    (stock) => stock.name
+  );
 
   const data = {
     labels,
@@ -68,7 +81,9 @@ const WatchList = () => {
       {
         label: "Price",
 
-        data: updatedWatchlist.map((stock) => stock.price),
+        data: updatedWatchlist.map(
+          (stock) => stock.price || 0
+        ),
 
         backgroundColor: [
           "rgba(255, 99, 132, 0.5)",
@@ -93,9 +108,12 @@ const WatchList = () => {
     ],
   };
 
+  // ================= UI =================
+
   return (
     <div className="watchlist-container">
 
+      {/* Search */}
       <div className="search-container">
 
         <input
@@ -112,19 +130,20 @@ const WatchList = () => {
 
       </div>
 
+      {/* Watchlist */}
       <ul className="list">
 
-        {updatedWatchlist.map((stock, index) => {
-          return (
-            <WatchListItem
-              stock={stock}
-              key={index}
-            />
-          );
-        })}
+        {updatedWatchlist.map((stock, index) => (
+          <WatchListItem
+            stock={stock}
+            loading={loading}
+            key={index}
+          />
+        ))}
 
       </ul>
 
+      {/* Chart */}
       <DoughnutChart data={data} />
 
     </div>
@@ -134,11 +153,14 @@ const WatchList = () => {
 export default WatchList;
 
 
-// ================= WATCHLIST ITEM =================
+// ======================================================
+// WATCHLIST ITEM
+// ======================================================
 
-const WatchListItem = ({ stock }) => {
+const WatchListItem = ({ stock, loading }) => {
 
-  const [showWatchlistActions, setShowWatchlistActions] = useState(false);
+  const [showWatchlistActions, setShowWatchlistActions] =
+    useState(false);
 
   const handleMouseEnter = () => {
     setShowWatchlistActions(true);
@@ -156,30 +178,47 @@ const WatchListItem = ({ stock }) => {
 
       <div className="item">
 
+        {/* Stock Name */}
         <p className={stock.isDown ? "down" : "up"}>
           {stock.name}
         </p>
 
         <div className="itemInfo">
 
+          {/* Percentage */}
           <span className="percent">
-            {stock.percent}
+
+            {loading
+              ? "Loading..."
+              : stock.percent}
+
           </span>
 
-          {stock.isDown ? (
-            <KeyboardArrowDown className="down" />
-          ) : (
-            <KeyboardArrowUp className="up" />
+          {/* Arrow */}
+          {!loading && stock.price !== null && (
+            stock.isDown ? (
+              <KeyboardArrowDown className="down" />
+            ) : (
+              <KeyboardArrowUp className="up" />
+            )
           )}
 
+          {/* Price */}
           <span className="price">
-            ₹{Number(stock.price).toFixed(2)}
+
+            {loading
+              ? "..."
+              : stock.price !== null
+                ? `₹${Number(stock.price).toFixed(2)}`
+                : "--"}
+
           </span>
 
         </div>
 
       </div>
 
+      {/* Actions */}
       {showWatchlistActions && (
         <WatchListActions uid={stock.name} />
       )}
@@ -189,7 +228,9 @@ const WatchListItem = ({ stock }) => {
 };
 
 
-// ================= WATCHLIST ACTIONS =================
+// ======================================================
+// WATCHLIST ACTIONS
+// ======================================================
 
 const WatchListActions = ({ uid }) => {
 
@@ -208,69 +249,61 @@ const WatchListActions = ({ uid }) => {
 
       <span>
 
+        {/* BUY */}
         <Tooltip
           title="Buy (B)"
           placement="top"
           arrow
           TransitionComponent={Grow}
         >
-
           <button
             className="buy"
             onClick={handleBuyClick}
           >
             Buy
           </button>
-
         </Tooltip>
 
 
+        {/* SELL */}
         <Tooltip
           title="Sell (S)"
           placement="top"
           arrow
           TransitionComponent={Grow}
         >
-
           <button
             className="sell"
             onClick={handleSellClick}
           >
             Sell
           </button>
-
         </Tooltip>
 
 
+        {/* ANALYTICS */}
         <Tooltip
           title="Analytics (A)"
           placement="top"
           arrow
           TransitionComponent={Grow}
         >
-
           <button className="action">
-
             <BarChartOutlined className="icon" />
-
           </button>
-
         </Tooltip>
 
 
+        {/* MORE */}
         <Tooltip
           title="More"
           placement="top"
           arrow
           TransitionComponent={Grow}
         >
-
           <button className="action">
-
             <MoreHoriz className="icon" />
-
           </button>
-
         </Tooltip>
 
       </span>
