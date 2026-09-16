@@ -17,7 +17,7 @@ const Funds = () => {
 
   const fetchFunds = async () => {
     try {
-      const res = await axios.get("http://localhost:3002/allFunds");
+      const res = await axios.get("https://zerodha-backend-14si.onrender.com/allFunds");
       console.log(res.data);
       setFunds(res.data);
     } catch (error) {
@@ -39,7 +39,7 @@ const Funds = () => {
     }
 
     try {
-      await axios.post("http://localhost:3002/addFunds", {
+      await axios.post("https://zerodha-backend-14si.onrender.com/addFunds", {
         amount: Number(amount),
       });
 
@@ -71,7 +71,7 @@ const Funds = () => {
     }
 
     try {
-      await axios.post("http://localhost:3002/withdrawFunds", {
+      await axios.post("https://zerodha-backend-14si.onrender.com/withdrawFunds", {
         amount: Number(amount),
       });
 

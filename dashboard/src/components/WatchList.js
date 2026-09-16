@@ -24,7 +24,7 @@ const WatchList = () => {
   const fetchQuotes = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:3002/marketQuotes"
+        "https://zerodha-backend-14si.onrender.com/marketQuotes"
       );
 
       console.log("Live Market Quotes:", res.data);

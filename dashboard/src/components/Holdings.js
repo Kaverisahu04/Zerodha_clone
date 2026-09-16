@@ -9,7 +9,7 @@ const Holdings = () => {
   // Holdings DB se
   const fetchHoldings = async () => {
     try {
-      const res = await axios.get("http://localhost:3002/allHoldings");
+      const res = await axios.get("https://zerodha-backend-14si.onrender.com/allHoldings");
       console.log("Holdings:", res.data);
       setAllHoldings(res.data);
     } catch (error) {
@@ -20,7 +20,7 @@ const Holdings = () => {
   // Live market prices
   const fetchQuotes = async () => {
     try {
-      const res = await axios.get("http://localhost:3002/marketQuotes");
+      const res = await axios.get("https://zerodha-backend-14si.onrender.com/marketQuotes");
       console.log("Live Quotes:", res.data);
       setQuotes(res.data);
     } catch (error) {

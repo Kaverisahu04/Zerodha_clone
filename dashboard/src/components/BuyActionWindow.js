@@ -17,7 +17,7 @@ const BuyActionWindow = ({ uid }) => {
     const fetchStockPrice = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:3002/marketQuotes"
+          "https://zerodha-backend-14si.onrender.com/marketQuotes"
         );
 
         const liveStock = res.data.find(
@@ -49,7 +49,7 @@ const BuyActionWindow = ({ uid }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3002/newOrder",
+        "https://zerodha-backend-14si.onrender.com/newOrder",
         {
           name: uid,
           qty: Number(stockQuantity),

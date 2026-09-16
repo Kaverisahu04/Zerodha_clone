@@ -9,7 +9,7 @@ const Positions = () => {
   const fetchPositions = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:3002/allPositions"
+        "https://zerodha-backend-14si.onrender.com/allPositions"
       );
 
       console.log("Positions:", res.data);
@@ -23,7 +23,7 @@ const Positions = () => {
   const fetchQuotes = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:3002/marketQuotes"
+        "https://zerodha-backend-14si.onrender.com/marketQuotes"
       );
 
       console.log("Live Quotes:", res.data);

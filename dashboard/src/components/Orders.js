@@ -7,7 +7,7 @@ const Orders = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3002/allOrders")
+      .get("https://zerodha-backend-14si.onrender.com/allOrders")
       .then((response) => {
         setOrders(response.data);
       })

@@ -159,7 +159,7 @@ const email = user?.email;
       onClick={() => {
         localStorage.removeItem("user");
         localStorage.removeItem("token");
-        window.location.href = "http://localhost:3000/login";
+        window.location.href = "https://zerodha-backend-14si.onrender.com/login";
       }}
     >
       Logout

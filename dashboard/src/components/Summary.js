@@ -27,7 +27,7 @@ const Summary = () => {
   const fetchFunds = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:3002/allFunds"
+        "https://zerodha-backend-14si.onrender.com/allFunds"
       );
 
       console.log("Funds:", res.data);
@@ -45,7 +45,7 @@ const Summary = () => {
   const fetchHoldings = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:3002/allHoldings"
+        "https://zerodha-backend-14si.onrender.com/allHoldings"
       );
 
       console.log("Holdings:", res.data);
@@ -63,7 +63,7 @@ const Summary = () => {
   const fetchQuotes = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:3002/marketQuotes"
+        "https://zerodha-backend-14si.onrender.com/marketQuotes"
       );
 
       console.log("Live Quotes:", res.data);
