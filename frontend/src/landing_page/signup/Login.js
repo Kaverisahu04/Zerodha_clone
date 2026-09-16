@@ -46,7 +46,7 @@ function Login() {
                 // yaha dashboard route dalna
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("user", JSON.stringify(data.user));
-                window.location.href = `http://localhost:3001/?token=${data.token}`;
+                window.location.href = `https://zerodha-dashboard-n8xq.onrender.com/?token=${data.token}`;
                 // window.location.href=`http://localhost:3001?username=${encodeURIComponent(data.user.username)}&email=${encodeURIComponent(data.user.email)}`;;
                 // window.location.href = "http://localhost:3001";
             }
