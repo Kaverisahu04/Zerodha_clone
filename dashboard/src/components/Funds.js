@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Funds = () => {
   // ================= STATES =================
+  const navigate = useNavigate();
 
   const [funds, setFunds] = useState(null);
 
@@ -331,9 +333,12 @@ const Funds = () => {
               You don't have a commodity account
             </p>
 
-            <button className="btn btn-blue">
-              Open Account
-            </button>
+            <button
+  onClick={() => navigate("/signup")}
+  className="btn btn-blue"
+>
+  Open Account
+</button>
 
           </div>
 
